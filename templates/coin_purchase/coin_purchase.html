@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<section class="section-conten padding-y bg">
+<div class="container">
+    <header class="section-heading">
+        <h2 class="section-title">Coin Purchase</h2>
+    </header>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card card-product-grid">
+                <figcaption class="info-wrap">
+                    <h5 class="title">Your Coin Balance</h5>
+                    <div class="price mt-1">{{ user.coin_balance }}</div>
+                </figcaption>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card card-product-grid">
+                <figcaption class="info-wrap">
+                    <h5 class="title">Redeem Reward Points</h5>
+                    <div class="price mt-1">{{ user.reward_points }} points</div>
+                    <button class="btn btn-block btn-primary" id="redeem-points-btn">Redeem Points</button>
+                </figcaption>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'buy_now' %}" class="btn btn-primary">Purchase More Coins</a>
+    </div>
+</div>
+</section>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#redeem-points-btn').on('click', function(event) {
+            event.preventDefault();
+            var url = "{% url 'redeem_points' %}";
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Points redeemed successfully!');
+                        location.reload();
+                    } else {
+                        alert('Failed to redeem points. Please try again.');
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

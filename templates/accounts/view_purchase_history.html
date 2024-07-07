@@ -1,0 +1,83 @@
+{% extends 'accounts/dashboard.html' %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10"> <!-- Increased column width for larger content -->
+            <article class="card shadow-sm mb-4">
+                <header class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="d-inline-block mr-3">Purchase History</h4>
+                    <a href="{% url 'dashboard' %}" class="btn btn-light">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </header>
+                <div class="card-body">
+                    {% if purchase_history %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-striped">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">Package</th>
+                                    <th scope="col">Coins</th>
+                                    <th scope="col">Price</th>
+                                    <th scope="col">Purchase Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for purchase in purchase_history %}
+                                <tr>
+                                    <td>{{ purchase.coin_package.name }}</td>
+                                    <td>{{ purchase.coin_package.coins }}</td>
+                                    <td>${{ purchase.coin_package.price }}</td>
+                                    <td>{{ purchase.purchase_date|date:"F d, Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">You have no purchase history.</p>
+                    {% endif %}
+                </div>
+            </article>
+        </div>
+    </div>
+</div>
+<style>
+.card-header.bg-primary {
+    background-color: #007bff !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header h4 {
+    margin: 0;
+    font-size: 1.5rem; /* Increased font size */
+}
+
+.card-header .btn-light {
+    color: #007bff;
+    background-color: #fff;
+    border-color: #007bff;
+}
+
+.card-header .btn-light:hover {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.container.my-4 {
+    max-width: 1000px; /* Increased max-width */
+}
+</style>
+{% endblock %}

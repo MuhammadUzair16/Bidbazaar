@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<section class="section-content padding-y bg">
+    <div class="container">
+        <div class="row">
+            <aside class="col-md-3">
+                <ul class="list-group">
+                    <a class="list-group-item" href="{% url 'view_purchase_history' %}"> View Coins Purchase history </a>
+                    <a class="list-group-item" href="#"> View Bidding history </a>
+                    <a class="list-group-item" href="{% url 'manage_account' %}"> Manage Account details </a>
+                    <a class="list-group-item" href="#">View Reward Points balance</a>
+                    <a class="list-group-item" href="#"> Redeem Reward Points</a>
+                    <a class="list-group-item" href="#"> Received orders </a>
+                </ul>
+                <br>
+                <a class="btn btn-light btn-block" href="{% url 'logout' %}">
+                    <i class="fa fa-power-off"></i>
+                    <span class="text">Log out</span>
+                </a>
+            </aside>
+            <main class="col-md-9">
+                {% block dashboard_content %}
+                {% endblock %}
+            </main>
+        </div>
+    </div>
+</section>
+{% endblock %}
