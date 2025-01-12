@@ -1,7 +1,7 @@
 
 
 from pathlib import Path
-
+from celery.schedules import crontab
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,6 +21,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'accounts.apps.AccountsConfig',
     'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -28,12 +29,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'accounts',
     'product',
     'coin_purchase',
+    'BidPlacement',
+    'rewards'
+
 
 
 ]
+ASGI_APPLICATION = 'bidbazaar.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -58,6 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
             ],
         },
     },
@@ -74,7 +84,7 @@ AUTH_USER_MODEL = 'accounts.Account'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bidbazaar',
+        'NAME': 'bidbazaaar',
         'USER': 'root',
         'PASSWORD': 'root123',
         'HOST': '127.0.0.1',
@@ -138,12 +148,16 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'uk200114@gmail.com'
-EMAIL_HOST_PASSWORD = 'jluc itwn luxs mydf'
+EMAIL_HOST_PASSWORD = 'rvfu iszz saja ieyj'
 
-# settings.py
+
 STRIPE_SECRET_KEY = 'sk_test_51PXqdvHxKAFHWD8vLoYYpC6HWhfd9KNoeI3IvPTMJSvAsavX8bvISVRWpPJV8YTCgSUW2zoy2E9bFF2EPwRtTNCP00rQpzvws7'
 STRIPE_PUBLISHABLE_KEY = 'pk_test_51PXqdvHxKAFHWD8vrsMTEtXTwlQmMM2kQHBOvBK3wkhsO6tc1zh5NxQELoO2HxSlg9au0VQD9FkMSYI4eB3SBR6Z001NRyxniX'
 
+
+
+TIME_ZONE = 'Asia/Karachi'
+USE_TZ = True
 
 
 
@@ -151,3 +165,23 @@ STRIPE_PUBLISHABLE_KEY = 'pk_test_51PXqdvHxKAFHWD8vrsMTEtXTwlQmMM2kQHBOvBK3wkhsO
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+
+CELERY_TIMEZONE = 'UTC'
+
+
+CELERY_BEAT_SCHEDULE = {
+    'ai-bid-task': {
+        'task': 'bidplacement.tasks.ai_place_bids',
+        'schedule': crontab(minute='*/1'),
+    },
+}

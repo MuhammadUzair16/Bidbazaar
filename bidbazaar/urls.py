@@ -10,5 +10,8 @@ urlpatterns = [
     path('product/', include('product.urls')),
     path('accounts/', include('accounts.urls')),
     path('coin_purchase/', include('coin_purchase.urls')),
+    path('bid/', include('BidPlacement.urls')),
+    path('rewards/', include('rewards.urls')),
+
 
    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

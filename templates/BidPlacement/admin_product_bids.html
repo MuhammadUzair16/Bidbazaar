@@ -1,0 +1,28 @@
+{% extends 'admin/base_site.html' %}
+{% block content %}
+    <h2>Bidding Details for {{ product.product_name }}</h2>
+    <p>Actual Price: {{ product.price }}</p>
+    <h3>Bid History:</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Bid Amount</th>
+                <th>Bid Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bid in bids %}
+                <tr>
+                    <td>{{ bid.user.username }}</td>
+                    <td>{{ bid.bid_amount }}</td>
+                    <td>{{ bid.bid_time }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No bids placed yet.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

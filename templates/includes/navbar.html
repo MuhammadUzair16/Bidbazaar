@@ -1,93 +1,139 @@
 {% load static %}
 
 <header class="section-header">
-<nav class="navbar p-md-0 navbar-expand-sm navbar-light border-bottom">
-<div class="container">
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTop4" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarTop4">
-    <ul class="navbar-nav mr-auto">
-    	<li class="nav-item dropdown">
-		 	<a href="#" class="nav-link">   English </a>
-		</li>
-		<li class="nav-item dropdown">
-			<a href="#" class="nav-link"> PKR </a>
-		</li>
-    </ul>
-    <ul class="navbar-nav">
-		<li><a href="mailto: Bidbazaar6.com" class="nav-link"> <i class="fa fa-envelope"></i> Email </a></li>
-		<li><a href="#" class="nav-link"> <i class="fa fa-phone"></i> Call us </a></li>
-	</ul>
-  </div>
-</div>
-</nav>
+    <nav class="navbar p-md-0 navbar-expand-sm navbar-light border-bottom">
+        <div class="container">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTop4" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarTop4">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link">English</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link">PKR</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li><a href="mailto: Bidbazaar6.com" class="nav-link"><i class="fa fa-envelope"></i> Email</a></li>
+                    <li><a href="#" class="nav-link"><i class="fa fa-phone"></i> Call us</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-<section class="header-main border-bottom">
-	<div class="container">
-<div class="row align-items-center">
-	<div class="col-lg-2 col-md-3 col-6">
-    <a href="{% url 'home' %}" class="brand-wrap">
-        <img class="logo" src="{% static './images/logo.jpg' %}" style="position: relative; left: -50px;">
-    </a>
-</div>
+    <section class="header-main border-bottom">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-2 col-md-3 col-6">
+                    <a href="{% url 'home' %}" class="brand-wrap">
+                        <img class="logo" src="{% static './images/logo.jpg' %}" style="position: relative; left: -50px;">
+                    </a>
+                </div>
 
-	<div class="col-lg col-sm col-md col-6 flex-grow-0">
-	</div>
+                <div class="col-lg col-sm col-md col-6 flex-grow-0">
+                </div>
 
-    <a href="{% url 'product' %}" class="btn btn-outline-primary">Products</a>
+                <a href="{% url 'product' %}" class="btn btn-outline-primary">Products</a>
 
-	<div class="col-lg col-md-6 col-sm-12 col">
-		<form action="#" class="search">
-			<div class="input-group w-100">
-			    <input type="text" class="form-control" style="width:70%;" placeholder="Search">
-			    <div class="input-group-append">
-			      <button class="btn btn-primary" type="submit">
-			        <i class="fa fa-search"></i>
-			      </button>
-			    </div>
-		    </div>
-		</form>
-	</div>
+                <div class="col-lg col-md-6 col-sm-12 col">
+                   <form method="GET" action="{% url 'product' %}" class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="Search products..." value="{{ search_query }}">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="submit"><i class="fa fa-search"></i></button>
+                </div>
+            </form>
+                </div>
 
-    <!-- New Coin Purchase Button -->
-    <div class="col-lg col-md-3 col-sm-12 col">
-    <a href="{% url 'buy_now' %}" class="btn btn-outline-primary custom-align-right">Purchase Coins</a>
-	<style>
-			.custom-align-right {
-   				 margin-left: 120px;
-			}
-	</style>
+                <div class="col-lg col-md-3 col-sm-12 col">
+                    <a href="{% url 'buy_now' %}" class="btn btn-outline-primary ml-auto">Purchase Coins</a> <!-- Adjusted margin -->
+                </div>
 
-</div>
+                <div class="col-lg-2 col-md-3 col-sm-6 col text-right">
+                    <div class="d-flex justify-content-end align-items-center">
+                        <div class="ml-auto">
+                            <div class="coin-icon">
+                                <i class="fas fa-coins fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="coin-balance mt-1">
+                            {{ request.user.profile.coins }}
+                        </div>
+                    </div>
+                </div>
 
-
-	<div class="col-lg-3 col-sm-6 col-8 order-2 order-lg-3">
-		<div class="d-flex justify-content-end mb-3 mb-lg-0">
-			{% if user.id is None %}
-			<div class="widget-header">
-				<small class="title text-muted">Welcome guest!</small>
-				<div>
-					<a href="{% url 'login' %}">Sign in</a> <span class="dark-transp"> | </span>
-					<a href="{% url 'register' %}"> Register</a>
-				</div>
-			</div>
-			{% else %}
-			<div class="widget-header">
-				<small class="title text-muted">Welcome {{user.first_name}}</small>
-				<div>
-					<a href="{% url 'dashboard' %}">Dashboard</a> <span class="dark-transp"> | </span>
-					<a href="{% url 'logout' %}">Logout</a>
-				</div>
-			</div>
-			{% endif %}
-			<a href="#" class="widget-header pl-3 ml-3">
-				<div class="icon icon-sm rounded-circle border"><i class="fa fa-shopping-cart"></i></div>
-				<span class="badge badge-pill badge-danger notify">0</span>
-			</a>
-		</div>
-	</div>
-</div>
-	</div>
-</section>
+                <div class="col-lg-3 col-sm-6 col-8 order-2 order-lg-3">
+                    <div class="d-flex justify-content-end mb-3 mb-lg-0">
+                        {% if user.id is None %}
+                        <div class="widget-header">
+                            <small class="title text-muted">Welcome guest!</small>
+                            <div>
+                                <a href="{% url 'login' %}">Sign in</a> <span class="dark-transp"> | </span>
+                                <a href="{% url 'register' %}">Sign Up</a>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="widget-header">
+                            <small class="title text-muted">Welcome {{ user.first_name }}</small>
+                            <div>
+                                <a href="{% url 'dashboard' %}">Dashboard</a> <span class="dark-transp"> | </span>
+                                <a href="{% url 'logout' %}">Logout</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </header>
+
+<style>
+    .coin-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #ffd700, #ffae42);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .coin-icon:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .coin-icon i {
+        color: #fff;
+        font-size: 1.5rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .coin-balance {
+        font-size: 1rem;
+        font-weight: bold;
+        color: #333;
+        margin-left: 10px;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        letter-spacing: 0.5px;
+        transition: color 0.3s;
+    }
+
+    .coin-balance:hover {
+        color: #ff8c00;
+    }
+
+    .widget-header p {
+        font-size: 1rem;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .widget-header form button {
+        margin-top: 5px;
+    }
+</style>

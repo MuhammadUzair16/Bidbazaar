@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+
+        <div class="col-md-4 col-lg-3">
+            <div class="list-group">
+                <a href="{% url 'rewards:dashboard' %}" class="list-group-item list-group-item-action active">
+                    Reward Dashboard
+                </a>
+                <a href="{% url 'rewards:transaction_history' %}" class="list-group-item list-group-item-action">
+                    View Transaction History
+                </a>
+            </div>
+        </div>
+
+
+        <div class="col-md-8 col-lg-9">
+            <h3 class="mb-4">Reward Points</h3>
+
+
+            {% if rewardpoints %}
+               <div class="mb-4">
+                    <h4>Reward Points</h4>
+                    <p>You currently have <strong>{{ user_rewards }}</strong> reward points.</p>
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <strong>You currently have no reward points.</strong>
+                </div>
+            {% endif %}
+
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    Redeem Points
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'rewards:redeem_rewards' points_to_redeem=100 %}">
+                        {% csrf_token %}
+                        <p>Redeem 100 points for a discount or other benefits.</p>
+                        <button type="submit" class="btn btn-primary btn-lg">Redeem 100 points</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    Recent Transactions
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for transaction in transactions %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ transaction.transaction_type }}</strong>
+                                    - {{ transaction.points }} points
+                                </div>
+                                <span class="text-muted small">{{ transaction.timestamp|date:"Y-m-d H:i" }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">No transactions found.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+
+    .list-group-item-action.active {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+
+    @media (max-width: 768px) {
+        .list-group-item-action.active {
+            font-size: 14px;
+        }
+    }
+</style>
+{% endblock %}

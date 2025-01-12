@@ -4,9 +4,12 @@ from .models import Account
 from django.contrib import messages, auth
 from django.contrib.auth.decorators import login_required
 from coin_purchase.models import Purchase
+from BidPlacement.models import Bid
+from product.models import Product
+from rewards.models import UserRewardPoints, RewardPool, RewardTransaction
 from django.contrib.auth import get_user_model
 from datetime import datetime
-
+from django.db import transaction
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -28,31 +31,27 @@ def register(request):
             dob = form.cleaned_data['dob']
             password = form.cleaned_data['password']
             username = email.split("@")[0]
-            user = Account.objects.create_user(first_name=first_name, last_name=last_name, email=email, username=username, password=password, address=address, dob=dob, phone_number=phone_number )
-            user.phone_number = phone_number
+
+
+            user = Account.objects.create_user(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                username=username,
+                password=password,
+                address=address,
+                dob=dob,
+                phone_number=phone_number,
+            )
+            user.is_active = True
             user.save()
 
-            current_site = get_current_site(request)
-            mail_subject = 'Please activate your account'
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            message = render_to_string('accounts/account_verification_email.html',{
-                'user': user,
-                'domain': current_site.domain,
-                'uidb64': uid,
-                'token': token,
-        })
-            to_email = email
-            send_email = EmailMessage(mail_subject, message, to=[to_email])
-            send_email.send()
-            return redirect('/accounts/login/?command=verification&email=' + email)
-
-
-
-
+            messages.success(request, 'Your account has been created successfully. You can now log in.')
+            return redirect('login')
 
     else:
         form = RegistrationForm()
+
     context = {
         'form': form,
     }
@@ -97,17 +96,46 @@ def activate(request, uidb64, token):
         return redirect('register')
 
 
-@login_required(login_url='login')
+
+@login_required
 def dashboard(request):
-    user = request.user
-    purchase_history = Purchase.objects.filter(user=user, successful=True)
+    purchase_history = Purchase.objects.filter(user=request.user).order_by('-purchase_date')
+    purchase_dates = [purchase.purchase_date.strftime('%Y-%m-%d') for purchase in purchase_history]
+    purchase_coins = [purchase.amount for purchase in purchase_history]
+
+    bidding_history = Bid.objects.filter(user=request.user).order_by('-bid_time')
+    bidding_products = [bid.product.product_name for bid in bidding_history]
+    bidding_amounts = [bid.bid_amount for bid in bidding_history]
+
+    try:
+        user_rewards = UserRewardPoints.objects.get(user=request.user)
+    except UserRewardPoints.DoesNotExist:
+        user_rewards = UserRewardPoints.objects.create(user=request.user, points=0)
+
+    # Fetch products won by the user
+    won_products = Product.objects.filter(winner=request.user)
+
+    # Get highest bid for each product
+    products_with_highest_bids = []
+    for product in won_products:
+        highest_bid = product.bidplacement_bids.order_by('-bid_amount', '-bid_time').first()
+        products_with_highest_bids.append({
+            'product': product,
+            'highest_bid': highest_bid
+        })
+
     context = {
         'purchase_history': purchase_history,
+        'bidding_history': bidding_history,
+        'purchase_dates': purchase_dates,
+        'purchase_coins': purchase_coins,
+        'bidding_products': bidding_products,
+        'bidding_amounts': bidding_amounts,
+        'user_rewards': user_rewards.points,
+        'won_products': products_with_highest_bids,
     }
+
     return render(request, 'accounts/dashboard.html', context)
-
-
-
 
 @login_required
 def view_purchase_history(request):
@@ -138,7 +166,7 @@ def manage_account(request):
         user.phone_number = phone_number
         user.address = address
 
-        # Validate and parse the date
+
         try:
             user.dob = datetime.strptime(dob, '%Y-%m-%d').date()
         except ValueError:
@@ -153,3 +181,40 @@ def manage_account(request):
         'user': request.user,
     }
     return render(request, 'accounts/manage_account.html', context)
+
+from django.db import transaction
+from django.core.exceptions import ValidationError
+
+@login_required
+def redeem_rewards(request, points_to_redeem):
+
+    try:
+        user_points = UserRewardPoints.objects.get(user=request.user)
+    except UserRewardPoints.DoesNotExist:
+        user_points = UserRewardPoints.objects.create(user=request.user, points=0)
+
+    if user_points.points >= points_to_redeem:
+        try:
+
+            with transaction.atomic():
+
+                user_points.points -= points_to_redeem
+                user_points.save()
+
+
+                RewardTransaction.objects.create(
+                    user=request.user,
+                    points=points_to_redeem,
+                    transaction_type='redemption',
+                    product=None
+                )
+
+            messages.success(request, f"You have successfully redeemed {points_to_redeem} points!")
+        except ValidationError as e:
+            messages.error(request, f"A validation error occurred: {str(e)}")
+        except Exception as e:
+            messages.error(request, f"An error occurred while processing your redemption: {str(e)}")
+    else:
+        messages.error(request, "You don't have enough reward points to redeem.")
+
+    return redirect('dashboard')

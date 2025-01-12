@@ -2,15 +2,14 @@
 {% load static %}
 
 {% block content %}
-<!--<!DOCTYPE html>-->
-<!--<html lang="en">-->
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buy Virtual Coins</title>
-    <!-- Bootstrap CSS -->
+
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         .card-title {
@@ -41,7 +40,7 @@
                         <h5 class="card-title">{{ package.name }}</h5>
                         <p class="card-text">{{ package.description }}</p>
                         <p class="card-text"><strong>Coins:</strong> {{ package.coins }}</p>
-                        <p class="card-text"><strong>Price:</strong> ${{ package.price }}</p>
+                        <p class="card-text"><strong>Price:</strong> {{ package.coin_price }}</p>
                         <button class="btn btn-outline-primary buy-now" data-toggle="tooltip" title="Buy this package" data-package-id="{{ package.id }}">
                             <i class="fas fa-shopping-cart"></i> Buy Now
                         </button>
@@ -52,7 +51,7 @@
         </div>
     </div>
 
-    <!-- Purchase Confirmation Modal -->
+
     <div class="modal fade" id="purchaseModal" tabindex="-1" role="dialog" aria-labelledby="purchaseModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -73,7 +72,7 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS, Popper.js, and jQuery -->
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.6.0/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -86,7 +85,7 @@
                 $('#purchaseModal').modal('show');
 
                 $('#confirmPurchase').on('click', function() {
-                    // Add your purchase logic here
+
                     console.log('Purchase confirmed for package ID: ' + packageId);
                     $('#purchaseModal').modal('hide');
                 });

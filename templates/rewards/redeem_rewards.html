@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+
+        <div class="col-md-4 col-lg-3">
+            <div class="list-group">
+                <a href="{% url 'rewards:dashboard' %}" class="list-group-item list-group-item-action">
+                    Reward Dashboard
+                </a>
+                <a href="{% url 'rewards:transaction_history' %}" class="list-group-item list-group-item-action">
+                    View Transaction History
+                </a>
+            </div>
+        </div>
+
+
+        <div class="col-md-8 col-lg-9">
+            <h3 class="mb-4">Redeem Reward Points</h3>
+
+
+            {% if user.rewardpoints %}
+                <div class="alert alert-info">
+                    <strong>Your current reward points: </strong> {{ user.rewardpoints.points }} points
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <strong>You currently have no reward points to redeem.</strong>
+                </div>
+            {% endif %}
+
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    Redeem Points
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'rewards:redeem_rewards' %}">
+                        {% csrf_token %}
+
+
+                        <div class="form-group">
+                            <label for="points_to_redeem">Points to Redeem</label>
+                            <input type="number" class="form-control" id="points_to_redeem" name="points_to_redeem"
+                                   value="100" min="1" max="{{ user.rewardpoints.points }}" required>
+                            <small class="form-text text-muted">You can redeem points for discounts or other rewards.</small>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label for="reward_option">Choose a Reward</label>
+                            <select class="form-control" id="reward_option" name="reward_option">
+                                <option value="discount">Discount on Next Purchase</option>
+                                <option value="free_item">Free Item</option>
+                                <option value="voucher">Voucher for Future Use</option>
+                            </select>
+                        </div>
+
+
+                        <button type="submit" class="btn btn-primary">Redeem Points</button>
+                    </form>
+                </div>
+            </div>
+
+
+            {% if message %}
+                <div class="alert alert-success mt-3">
+                    {{ message }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-text {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .alert {
+        margin-top: 1.5rem;
+    }
+</style>
+{% endblock %}

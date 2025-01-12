@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<section class="section-content padding-y">
+    <div class="container">
+        <div class="row">
+            <aside class="col-md-6">
+                <div class="img-wrap">
+                    <img src="{{ product.images.url }}" alt="{{ product.product_name }}">
+                </div>
+            </aside>
+            <main class="col-md-6">
+                <h3 class="title">{{ product.product_name }}</h3>
+                <div class="current-bid mt-1">
+                    <strong>Last Bid:</strong>
+                    {% if highest_bid.user %}
+                        {{ highest_bid.user.first_name }}
+                    {% else %}
+                        {{ highest_bid.ai_name }}
+                    {% endif %}
+                    {{ highest_bid.bid_amount }} coin
+                </div>
+                <div class="winner-name mt-1">
+                    <strong>Current Winner:</strong>
+                    {% if highest_bid %}
+                        {% if highest_bid.user %}
+                            {{ highest_bid.user.first_name }} (User)
+                        {% else %}
+                            {{ highest_bid.ai_name }}
+                        {% endif %}
+                    {% else %}
+                        No bids yet.
+                    {% endif %}
+                </div>
+
+                <div class="auction-status mt-1">
+                    <strong>Auction Status:</strong>
+                    {% if product.is_auction_ended %}
+                        Auction has ended by admin.
+                    {% else %}
+                        Auction is still ongoing.
+                    {% endif %}
+                </div>
+                <div class="description mt-3">
+                    <p><strong>{{ product.description }}</strong></p>
+                    <p>Available: {{ product.is_available }}</p>
+                </div>
+                <div id="message-container" class="alert" style="display: none;"></div>
+                <form id="bidForm" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-primary ml-auto">Place Bid</button>
+                </form>
+                <div class="timer mt-3" style="display: none;">
+                    <span id="time-left">0:30</span>
+                </div>
+            </main>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <h3>Bidding History</h3>
+                <ul id="bidding-history">
+                    {% for bid in bids %}
+                        <li>
+                            {% if bid.user %}{{ bid.user.first_name }}{% else %}{{ bid.ai_name }}{% endif %}
+                            : Bid {{ bid.bid_amount }} coin at {{ bid.bid_time }}
+                        </li>
+                    {% empty %}
+                        <li>No bids placed yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Global Variables
+let timer = 30;
+let countdown = null;
+let isSubmitting = false;
+let aiBidPlaced = false;
+const timerDisplay = document.querySelector('.timer');
+const biddingHistory = document.getElementById('bidding-history');
+const messageContainer = document.getElementById('message-container');
+
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+}
+
+function startTimer() {
+    clearInterval(countdown);
+    timer = 30;
+    aiBidPlaced = false;
+    timerDisplay.style.display = 'block';
+    timerDisplay.style.opacity = 1;
+    timerDisplay.querySelector('#time-left').innerText = formatTime(timer);
+
+    countdown = setInterval(() => {
+        timer--;
+        timerDisplay.querySelector('#time-left').innerText = formatTime(timer);
+
+
+        if (timer === 5 && !aiBidPlaced) {
+            triggerAIBid();
+        }
+
+
+        if (timer === 1 && !aiBidPlaced) {
+            console.log("Fallback: Triggering AI bid before timer ends.");
+            triggerAIBid();
+        }
+
+
+        if (timer <= 0) {
+            clearInterval(countdown);
+            fadeOutTimer();
+            announceWinner();
+        }
+    }, 1000);
+}
+
+function triggerAIBid() {
+    console.log("Attempting to trigger AI bid...");
+
+    fetch("{% url 'BidPlacement:ai_place_bid' product.id %}")
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                aiBidPlaced = true;
+                updateBiddingHistory();
+                console.log("AI Bid Placed:", data.message);
+                startTimer();
+            } else {
+                console.log("AI Bid Not Placed:", data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error triggering AI bid:', error);
+        });
+}
+
+function announceWinner() {
+    fetch("{% url 'BidPlacement:check_winner' product.id %}")
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const winner = data.winner;
+                if (winner) {
+                    showMessage(
+                        `Auction ended! Winner: ${winner.name} with a bid of ${winner.bid_amount} coins.`,
+                        'success'
+                    );
+                } else {
+                    showMessage('Auction ended, but no bids were placed.', 'warning');
+                }
+            } else {
+                showMessage(data.message || 'Error announcing winner.', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error announcing winner:', error);
+            showMessage('Error announcing winner.', 'danger');
+        });
+}
+
+// Update the bidding history display
+function updateBiddingHistory() {
+    fetch("{% url 'BidPlacement:get_highest_bid' product.id %}")
+        .then(response => response.json())
+        .then(data => {
+            if (data.bids && Array.isArray(data.bids)) {
+                biddingHistory.innerHTML = data.bids.length
+                    ? data.bids.map(bid => {
+                          const bidder = bid.user__first_name || bid.ai_name || 'Anonymous';
+                          return `<li>${bidder} placed ${bid.bid_amount} coin at ${new Date(bid.bid_time).toLocaleString()}</li>`;
+                      }).join('')
+                    : '<li>No bids placed yet.</li>';
+            }
+        })
+        .catch(error => {
+            console.error('Error updating bidding history:', error);
+            showMessage('Error fetching bidding history.', 'danger');
+        });
+}
+
+function showMessage(message, type = 'success') {
+    messageContainer.textContent = message;
+    messageContainer.className = 'alert alert-' + type;
+    messageContainer.style.display = 'block';
+    setTimeout(() => {
+        messageContainer.style.display = 'none';
+    }, 5000);
+}
+
+function fadeOutTimer() {
+    timerDisplay.style.transition = 'opacity 1s ease-out';
+    timerDisplay.style.opacity = 0;
+
+    setTimeout(() => {
+        timerDisplay.style.display = 'none';
+    }, 1000);
+}
+
+document.getElementById('bidForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    const submitButton = this.querySelector('button[type="submit"]');
+    isSubmitting = true;
+    submitButton.disabled = true;
+
+    fetch("{% url 'BidPlacement:place_bid' product.id %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                updateBiddingHistory();
+
+                timerDisplay.style.display = 'block';
+                timerDisplay.style.opacity = 1;
+                startTimer();
+            } else {
+                showMessage(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error placing bid:', error);
+            showMessage('Error placing bid.', 'danger');
+        })
+        .finally(() => {
+            isSubmitting = false;
+            submitButton.disabled = false;
+        });
+});
+
+window.onload = function () {
+    updateBiddingHistory();
+};
+</script>
+
+<style>
+    .timer {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #ffffff;
+        background-color: #007bff;
+        padding: 5px;
+        border-radius: 5px;
+        display: none;
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .alert {
+        padding: 10px;
+        margin-top: 20px;
+        display: none;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}

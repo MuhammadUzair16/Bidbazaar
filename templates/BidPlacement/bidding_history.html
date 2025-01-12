@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section-content padding-y bg">
+    <div class="container">
+        <h2>Your Bidding History</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Product Image</th>
+                    <th>Product Name</th>
+                    <th>Coins Used</th>
+                    <th>Bid Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bid in user_bids %}
+                <tr>
+                    <td><img src="{{ bid.product.images.url }}" alt="Product Image" style="width: 100px; height: auto;"></td>
+                    <td>{{ bid.product.product_name }}</td>
+                    <td>{{ bid.bid_amount }}</td>
+                    <td>{{ bid.bid_time|date:"Y-m-d H:i" }}</td>
+                    <td>{{ bid.user_display_name }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">No bidding history available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

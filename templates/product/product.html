@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
+
 {% block content %}
 <section class="section-pagetop bg">
     <header class="border-bottom mb-4 pb-3">
         <div class="container">
         <div class="form-inline">
-            <span class="mr-md-auto align-right"><b>{{ product_count }}</b> Items found </span>
+           <span class="mr-md-auto align-right"><b>{{ product_count }}</b> Items found </span>
         </div>
     </div>
     </header>
@@ -13,18 +14,13 @@
         {% for product in products %}
         <div class="col-md-4">
             <figure class="card card-product-grid">
-                <div class="img-wrap">
-                    <img src="{{ product.images.url }}">
-                </div>
+                <a href="{% url 'product_detail' product.id %}" class="img-wrap">
+                    <img src="{{ product.images.url }}" alt="{{ product.product_name }}">
+                </a>
                 <figcaption class="info-wrap">
                     <div class="fix-height">
                         <a href="{% url 'product_detail' product.id %}" class="title">{{ product.product_name }}</a>
-                        <div class="price-wrap mt-2">
-                            <span class="price">PKR {{ product.price }}</span>
-                        </div>
                     </div>
-                    <a href="#" class="btn btn-outline-primary place-bid width" data-timer="30">Place bid</a>
-
                     <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-primary view-details width">View Details</a>
                     <div class="timer" style="display: none;"></div>
                 </figcaption>
@@ -32,19 +28,20 @@
         </div>
         {% endfor %}
     </div>
-    <style>
+</section>
+
+<style>
     .place-bid.width,
     .view-details.width {
-
         width: 200px;
         max-width: 300px;
-        display: inline-block; /* Align buttons in one line */
-        margin: 10px 5px; /* Adjust margins as needed */
+        display: inline-block;
+        margin: 10px 5px;
         padding-left: 30px;
         padding-right: 30px;
     }
 
-     .timer {
+    .timer {
         display: flex;
         justify-content: center;
         align-items: center;
@@ -62,9 +59,6 @@
     .align-right {
         margin-left: -230px;
     }
-
-
 </style>
-</section>
-{% endblock %}
 
+{% endblock %}
